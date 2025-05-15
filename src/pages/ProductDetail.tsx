@@ -182,6 +182,7 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] px-4 py-8">
+      <title>🔧Detalhes</title>
       <div className="max-w-6xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex mb-6" aria-label="Breadcrumb">
