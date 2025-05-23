@@ -5,7 +5,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verifica se o usuário está autenticado
     const isAuth = localStorage.getItem("isAuthenticated");
     if (!isAuth) {
       navigate("/login");

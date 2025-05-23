@@ -10,3 +10,7 @@ export interface RespostaProduto {
   data: Produto[];
   message: number;
 }
+
+export interface RespostaAutenticacao {
+  access_token: string;
+}

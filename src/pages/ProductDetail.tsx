@@ -4,25 +4,8 @@ import ReactMarkdown from 'react-markdown';
 import { MoonIcon, SunIcon } from '@heroicons/react/24/outline';
 
 import { ProductService } from '../api/api'
-
-interface Produto {
-  Codigo: string;
-  NomeProduto: string;
-  TipoMaterial: string;
-  Status?: string;
-  DescricaoTecnica: string;
-  criado: string;
-  atualizado: string;
-  imageUrls: string[];
-  Categoria: string;
-  DescricaoBasica: string;
-}
-
-interface ApiResponse {
-  success: boolean;
-  data: Produto;
-  message: string;
-}
+import type { RespostaApi } from '../models/respostaApi.interface';
+import type { Produto } from '../models/produto.inteface';
 
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -57,9 +40,9 @@ export default function ProductDetail() {
         setLoading(true);
         setError(null);
         
-        const response = await ProductService.getProduct(productId, localStorage.getItem('token') || '');
+        const response = await ProductService.getProduct(productId ?? '', localStorage.getItem('token') || '');
         
-        const data: ApiResponse = response;
+        const data:RespostaApi = response.data;
 
         if (!data.success) {
           throw new Error(data.message || 'Produto não encontrado');

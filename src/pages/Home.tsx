@@ -4,25 +4,12 @@ import { MoonIcon, SunIcon } from '@heroicons/react/24/outline'
 
 import { ProductService, AuthService } from '../api/api';
 
-interface Produto {
-  Codigo: string;
-  NomeProduto: string;
-  Status: string;
-  Categoria: string,
-  urlImagem: string;
-}
-
-interface ApiResponse {
-  data: {
-    data: Produto[];
-    message:number
-  };
-}
+import type { ProdutosPagina } from '../models/produtosPagina.interface';
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ Categoria: '' })
-  const [produtos, setProducts] = useState<Produto[]>([])
+  const [produtos, setProducts] = useState<ProdutosPagina[]>([])
   const [paginaAtual, setCurrentPage] = useState(1)
   const [itensPorPagina] = useState(100)
   const [totalItems, setTotalItems] = useState(0)
@@ -60,15 +47,17 @@ export default function App() {
       
       const response = await AuthService.login()
 
-      console.log('Token gerado com sucesso:', response.access_token)
+      const token = response.data.access_token;
 
-      localStorage.setItem('token', response.access_token)
+      console.log('Token gerado com sucesso:', token);
 
-      return response.access_token
+      localStorage.setItem('authToken', token);
+
+      return token;
       
     } catch (error) {
-      console.error(`Erro ao gerar token: ${error}`)
-      setError('Erro ao gerar token. Tente novamente mais tarde.')
+      console.error(`Erro ao gerar token: ${error}`);
+      setError('Erro ao gerar token. Tente novamente mais tarde.');
     }
   }
 
@@ -76,18 +65,19 @@ export default function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const response:ApiResponse = await ProductService.getAllProducts(pagina, limite, token)
+      const response= await ProductService.getAllProducts(pagina, limite, token)
 
-      const data: ApiResponse = await response;
+      const produtos = await response.data.data.data;
 
-      setProducts(data.data.data)
-      setTotalItems(data.data.message)
+      setProducts(produtos)
+      setTotalItems(produtos.length)
+      
     } catch (erro) {
       console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`)
 
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
 
-      gerarToken().then(token => carregarGrid(pagina, limite, token));
+      gerarToken().then(token => carregarGrid(pagina, limite, token ?? ''));
       
       setError('Erro ao carregar produtos. Tente novamente mais tarde.')
     } finally {
@@ -96,7 +86,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    gerarToken().then(token => carregarGrid(paginaAtual, itensPorPagina, token))
+    gerarToken().then(token => carregarGrid(paginaAtual, itensPorPagina, token ?? ''))
   }, [paginaAtual, itensPorPagina])
 
   const totalPages = Math.ceil(totalItems / itensPorPagina)
@@ -279,7 +269,7 @@ export default function App() {
                         <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
-                        {produto.Categoria}
+                        {produto.Categoria ?? "Sem Categoria"}
                       </div>
                       <div className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-4">
                         Código: {produto.Codigo}
