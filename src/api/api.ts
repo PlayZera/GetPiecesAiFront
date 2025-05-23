@@ -1,9 +1,9 @@
 import axios from 'axios';
+import { Produto } from '../models/produto.inteface';
 
 const API_BASE_URL = import.meta.env.VITE_API_DE_PRODUTOS_URL as string;
 
-// Configuração base do Axios
-const api: AxiosInstance = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
@@ -20,13 +20,12 @@ api.interceptors.response.use(
   }
 );
 
-// Serviço de Produtos
 export const ProductService = {
   getProduct: (id: string, token: string) => 
-    api.get<ApiResponse<Product>>(`/products/${id}?token=${token}`),
+    api.get<ApiResponse<Produto>>(`/products/${id}?token=${token}`),
   
   searchProducts: (query: string, token: string) => 
-    api.get<ApiResponse<Product[]>>('/products', { params: { q: query, token } }),
+    api.get<ApiResponse<Produto[]>>('/products', { params: { q: query, token } }),
   
   getAllProducts: (page: number = 1, limit: number = 100, token?: string) => 
     api.get<ProductsResponse>('/products', { params: { page, itensByPage: limit, token:token } }),
@@ -41,17 +40,5 @@ export const AuthService = {
     },
     { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 };
-
-// Adicione um interceptor para incluir o token automaticamente
-api.interceptors.request.use((config) => {
-
-  const token = localStorage.getItem('token');
-
-  if (token) {
-    config.headers.Authorization = token;
-  }
-  return config;
-
-});
 
 export default api;
