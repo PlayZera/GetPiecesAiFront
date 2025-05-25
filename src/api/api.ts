@@ -9,7 +9,7 @@ const DEFAULT_PASSWORD = import.meta.env.VITE_PORTAL_KEYPASS
 
 // Criação da instância com interceptores
 const instance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `/api/${API_BASE_URL}`,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
