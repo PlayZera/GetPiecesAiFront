@@ -67,7 +67,8 @@ export default function App() {
     try {
       const response= await ProductService.getAllProducts(pagina, limite, token)
 
-      const produtos = await response.data.data.data;
+      const produtos = await response.data.produtos;
+      console.log(produtos);
 
       setProducts(produtos)
       setTotalItems(produtos.length)

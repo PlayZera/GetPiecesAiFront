@@ -1,4 +1,5 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios from 'axios'
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 import type { Produto } from '../models/produto.inteface'
 import type { RespostaApi, RespostaAutenticacao } from '../models/respostaApi.interface'
 import type { ProdutosPagina } from '../models/produtosPagina.interface'
