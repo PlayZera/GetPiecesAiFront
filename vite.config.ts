@@ -23,5 +23,8 @@ export default defineConfig(({ mode }: UserConfig) => {
       outDir: 'dist',
       emptyOutDir: true,
     },
+    preview: {
+      port: 4173,
+    }
   }
 })
