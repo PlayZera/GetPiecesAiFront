@@ -18,6 +18,7 @@ export default defineConfig(({ mode }: UserConfig) => {
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
+      allowedHosts: ['getpiecesaifront-production.up.railway.app']
     },
     build: {
       outDir: 'dist',
@@ -25,6 +26,8 @@ export default defineConfig(({ mode }: UserConfig) => {
     },
     preview: {
       port: 4173,
-    }
+      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+    },
+
   }
 })
