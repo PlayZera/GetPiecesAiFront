@@ -1,14 +1,14 @@
-import { defineConfig, loadEnv, type UserConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(({ mode }: UserConfig) => {
-
-  const env = loadEnv(mode || 'development', process.cwd());
-
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd())
+  
   return {
-    plugins: [react(),
-    tailwindcss(),
+    plugins: [
+      react(),
+      tailwindcss(),
     ],
     server: {
       proxy: {
@@ -16,18 +16,28 @@ export default defineConfig(({ mode }: UserConfig) => {
           target: env.VITE_API_DE_PRODUTOS_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
-        },
-      },
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+          // Adiciona headers CORS para as respostas do proxy
+          configure: (proxy, options) => {
+            proxy.on('proxyRes', (proxyRes) => {
+              proxyRes.headers['Access-Control-Allow-Origin'] = '*'
+              proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+              proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            })
+          }
+        }
+      }
     },
     build: {
       outDir: 'dist',
-      emptyOutDir: true,
+      emptyOutDir: true
     },
     preview: {
       port: 4173,
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
-    },
-
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    }
   }
 })
