@@ -9,7 +9,7 @@ const DEFAULT_USERNAME = import.meta.env.VITE_PORTAL_USER;
 const DEFAULT_PASSWORD = import.meta.env.VITE_PORTAL_KEYPASS;
 
 const instance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'https://get-pieces-api-production.up.railway.app/',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
