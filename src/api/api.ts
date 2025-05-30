@@ -1,21 +1,20 @@
-import axios from 'axios'
-import type { AxiosRequestConfig, AxiosResponse } from 'axios'
-import type { Produto } from '../models/produto.inteface'
-import type { RespostaApi, RespostaAutenticacao } from '../models/respostaApi.interface'
-import type { ProdutosPagina } from '../models/produtosPagina.interface'
+import axios from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { Produto } from '../models/produto.inteface';
+import type { RespostaApi, RespostaAutenticacao } from '../models/respostaApi.interface';
+import type { ProdutosPagina } from '../models/produtosPagina.interface';
 
-const API_BASE_URL = import.meta.env.VITE_API_DE_PRODUTOS_URL
-const DEFAULT_USERNAME = import.meta.env.VITE_PORTAL_USER
-const DEFAULT_PASSWORD = import.meta.env.VITE_PORTAL_KEYPASS
+const API_BASE_URL = import.meta.env.VITE_API_DE_PRODUTOS_URL;
+const DEFAULT_USERNAME = import.meta.env.VITE_PORTAL_USER;
+const DEFAULT_PASSWORD = import.meta.env.VITE_PORTAL_KEYPASS;
 
-// Criação da instância com interceptores
 const instance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
-  },
-})
+  }
+});
 
 instance.interceptors.request.use((config:AxiosRequestConfig) => {
   const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');

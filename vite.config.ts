@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_DE_PRODUTOS_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
-          // Adiciona headers CORS para as respostas do proxy
+
           configure: (proxy, options) => {
             proxy.on('proxyRes', (proxyRes) => {
               proxyRes.headers['Access-Control-Allow-Origin'] = '*'
@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
             })
           }
         },
-        allowedHosts: ['getpiecesaifront-production.up.railway.app']
+        allowedHosts: ['https://getpiecesaifront-production.up.railway.app']
       }
     },
     build: {
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       },
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+      allowedHosts: ['https://getpiecesaifront-production.up.railway.app']
     }
   }
 })
