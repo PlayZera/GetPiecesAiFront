@@ -34,12 +34,9 @@ export default defineConfig(({ mode }) => {
     },
     preview: {
       port: 4173,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': '*',
-        'Access-Control-Allow-Headers': '*'
-      },
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+      allowedHosts: ['getpiecesaifront-production.up.railway.app'],
+      cors: true,
+      https: true
     }
   }
 })
