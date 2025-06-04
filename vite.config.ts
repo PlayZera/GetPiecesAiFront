@@ -20,12 +20,12 @@ export default defineConfig(({ mode }) => {
           configure: (proxy, options) => {
             proxy.on('proxyRes', (proxyRes) => {
               proxyRes.headers['Access-Control-Allow-Origin'] = '*'
-              proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-              proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+              proxyRes.headers['Access-Control-Allow-Methods'] = '*'
+              proxyRes.headers['Access-Control-Allow-Headers'] = '*'
             })
           }
         },
-        allowedHosts: ['https://getpiecesaifront-production.up.railway.app']
+        allowedHosts: ['*']
       }
     },
     build: {
@@ -36,10 +36,10 @@ export default defineConfig(({ mode }) => {
       port: 4173,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        'Access-Control-Allow-Methods': '*',
+        'Access-Control-Allow-Headers': '*'
       },
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+      allowedHosts: ['*']
     }
   }
 })
