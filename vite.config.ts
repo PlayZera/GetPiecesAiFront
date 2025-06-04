@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
             })
           }
         },
-        allowedHosts: ['*']
+        allowedHosts: ['getpiecesaifront-production.up.railway.app']
       }
     },
     build: {
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
         'Access-Control-Allow-Methods': '*',
         'Access-Control-Allow-Headers': '*'
       },
-      allowedHosts: ['*']
+      allowedHosts: ['getpiecesaifront-production.up.railway.app']
     }
   }
 })
