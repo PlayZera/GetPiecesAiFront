@@ -16,16 +16,6 @@ const instance = axios.create({
   }
 });
 
-instance.interceptors.request.use((config:AxiosRequestConfig) => {
-  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-
-  if (token) {
-    config.headers.Authorization = token;
-  }
-  return config;
-
-})
-
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -38,15 +28,7 @@ instance.interceptors.response.use(
 
 export const ProductService = {
 
-  getProduct: (id: string, token?: string): Promise<AxiosResponse<RespostaApi<Produto>>> => {
-    const config: AxiosRequestConfig = {}
-
-    if (token) {
-      config.headers = token;
-    }
-    
-    return instance.get(`/products/${id}`, config)
-  },
+  getProduct: (id: string, token?: string): Promise<AxiosResponse<RespostaApi<Produto>>> => { return instance.get(`/products/${id}&token=${token}`)},
 
   getAllProducts: (page:number, limit:number, token:string): Promise<AxiosResponse<RespostaApi<ProdutosPagina[]>>> => {
     return instance.get('/products', {
