@@ -74,9 +74,11 @@ export default function App() {
       setTotalItems(produtos.length)
       
     } catch (erro) {
-      console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`)
-      
-      setError('Erro ao carregar produtos. Tente novamente mais tarde.')
+      console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`);
+
+      gerarToken().then(token => {carregarGrid(pagina, limite, token ?? '')});
+
+      setError('Erro ao carregar produtos. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false)
     }

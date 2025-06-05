@@ -39,19 +39,20 @@ export default function ProductDetail() {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await ProductService.getProduct(productId ?? '', localStorage.getItem('token') || '');
-        
-        const data:RespostaApi = response.data;
+        const token = localStorage.getItem('token');
 
-        if (!data.success) {
-          throw new Error(data.message || 'Produto não encontrado');
+        const response = await fetch(`https://get-pieces-api-production.up.railway.app/produto/${productId}&token=${token}`);
+        
+        const produto = response.json();
+
+        if (!produto.success) {
+          throw new Error(produto.message || 'Produto não encontrado');
         }
 
-        setProduct(data.data);
+        setProduct(produto.produto);
 
-        if (data.data.imageUrls?.length > 0) {
-          setMainImage(data.data.imageUrls[0]);
+        if (produto.produto.imageUrls?.length > 0) {
+          setMainImage(produto.produto.imageUrls[0]);
         }
       } catch (error) {
         console.error("Erro ao buscar produto:", error);
