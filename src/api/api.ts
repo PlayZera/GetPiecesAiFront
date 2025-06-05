@@ -16,6 +16,18 @@ const instance = axios.create({
   }
 });
 
+instance.interceptors.request.use(config => {
+  if (config.url && config.url.startsWith('http://')) {
+    config.url = config.url.replace('http://', 'https://');
+  }
+  
+  if (config.baseURL && config.baseURL.startsWith('http://')) {
+    config.baseURL = config.baseURL.replace('http://', 'https://');
+  }
+  
+  return config;
+});
+
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
