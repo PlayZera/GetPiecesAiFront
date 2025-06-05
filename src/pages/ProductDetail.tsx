@@ -43,7 +43,7 @@ export default function ProductDetail() {
 
         const response = await fetch(`https://get-pieces-api-production.up.railway.app/products/${productId}?token=${token}`);
         
-        const produto = response.json();
+        const produto = await response.json();
 
         console.log(produto);
 
