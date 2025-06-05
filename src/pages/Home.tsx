@@ -51,7 +51,7 @@ export default function App() {
 
       console.log('Token gerado com sucesso:', token);
 
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('token', token);
 
       return token;
       
