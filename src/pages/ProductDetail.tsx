@@ -45,8 +45,10 @@ export default function ProductDetail() {
         
         const produto = response.json();
 
-        if (!produto.success) {
-          throw new Error(produto.message || 'Produto não encontrado');
+        console.log(produto);
+
+        if (!produto.sucesso) {
+          throw new Error(produto.mensagem || 'Produto não encontrado');
         }
 
         setProduct(produto.produto);
