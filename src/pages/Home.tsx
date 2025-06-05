@@ -65,12 +65,12 @@ export default function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const response= await ProductService.getAllProducts(pagina, limite, token)
+      const response= await fetch(`https://get-pieces-api-production.up.railway.app/products/?page=${pagina}&itensByPage=${limite}&token=${token}`)
 
-      const produtos = await response.data.produtos;
+      const produtos = await response.json();
       console.log(produtos);
 
-      setProducts(produtos)
+      setProducts(produtos.produtos)
       setTotalItems(produtos.length)
       
     } catch (erro) {
