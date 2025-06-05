@@ -41,7 +41,7 @@ export default function ProductDetail() {
         setError(null);
         const token = localStorage.getItem('token');
 
-        const response = await fetch(`https://get-pieces-api-production.up.railway.app/produto/${productId}&token=${token}`);
+        const response = await fetch(`https://get-pieces-api-production.up.railway.app/products/${productId}?token=${token}`);
         
         const produto = response.json();
 
