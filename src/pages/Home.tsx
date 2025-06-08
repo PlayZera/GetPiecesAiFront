@@ -39,12 +39,6 @@ export default function App() {
 
   const gerarToken = async () => {
     try {
-
-      if (localStorage.getItem('token') != undefined) {
-        console.log('Token já existe:', localStorage.getItem('token'));
-        return localStorage.getItem('token');
-      }
-      
       const response = await AuthService.login()
 
       const token = response.data.access_token;
@@ -77,7 +71,7 @@ export default function App() {
       console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`);
 
       localStorage.removeItem('token');
-      
+
       gerarToken().then(token => {carregarGrid(pagina, limite, token ?? '')});
 
       setError('Erro ao carregar produtos. Tente novamente mais tarde.');
