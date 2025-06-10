@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { MoonIcon, SunIcon } from "@heroicons/react/outline";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {

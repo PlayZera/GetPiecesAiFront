@@ -1,10 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { MoonIcon, SunIcon } from '@heroicons/react/24/outline';
+import { MoonIcon, SunIcon } from '@heroicons/react/outline';
 
-import { ProductService } from '../api/api'
-import type { RespostaApi } from '../models/respostaApi.interface';
 import type { Produto } from '../models/produto.inteface';
 
 export default function ProductDetail() {

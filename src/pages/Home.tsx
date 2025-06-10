@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { MoonIcon, SunIcon } from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon } from '@heroicons/react/outline'
 
-import { ProductService, AuthService } from '../api/api';
+import { AuthService } from '../api/api';
 
 import type { ProdutosPagina } from '../models/produtosPagina.interface';
 
