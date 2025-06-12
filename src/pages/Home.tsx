@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { MoonIcon, SunIcon } from '@heroicons/react/outline'
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { MoonIcon, SunIcon } from '@heroicons/react/outline';
 
 import { AuthService } from '../api/api';
-
 import type { ProdutosPagina } from '../models/produtosPagina.interface';
 
 export default function App() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ Categoria: '' })
   const [produtos, setProducts] = useState<ProdutosPagina[]>([])
@@ -39,6 +40,11 @@ export default function App() {
 
   const gerarToken = async () => {
     try {
+      const isAuth = localStorage.getItem("isAuthenticated");
+
+      if (!isAuth)
+        navigate("/login");
+
       const response = await AuthService.login()
 
       const token = response.data.access_token;
@@ -51,6 +57,7 @@ export default function App() {
       
     } catch (error) {
       console.error(`Erro ao gerar token: ${error}`);
+      localStorage.setItem("isAuthenticated", "false");
       setError('Erro ao gerar token. Tente novamente mais tarde.');
     }
   }
@@ -71,6 +78,7 @@ export default function App() {
       console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`);
 
       localStorage.removeItem('token');
+      localStorage.setItem("isAuthenticated", "false");
 
       gerarToken().then(token => {carregarGrid(pagina, limite, token ?? '')});
 

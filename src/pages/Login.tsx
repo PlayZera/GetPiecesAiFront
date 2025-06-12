@@ -35,6 +35,7 @@ export default function Login() {
     // Validação simples
     if (!email || !password) {
       setError("Por favor, preencha todos os campos");
+      localStorage.setItem("isAuthenticated", "false");
       return;
     }
 
