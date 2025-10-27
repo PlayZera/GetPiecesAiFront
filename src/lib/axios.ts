@@ -13,15 +13,6 @@ const api = axios.create({
 // Interceptor de requisição para adicionar token automaticamente
 api.interceptors.request.use(
   (config) => {
-    // Força HTTPS
-    if (config.url && config.url.startsWith('http://')) {
-      config.url = config.url.replace('http://', 'https://');
-    }
-    
-    if (config.baseURL && config.baseURL.startsWith('http://')) {
-      config.baseURL = config.baseURL.replace('http://', 'https://');
-    }
-
     // Adiciona token automaticamente se disponível
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (token && config.headers) {
