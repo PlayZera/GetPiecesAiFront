@@ -1,220 +1,161 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 import { MoonIcon, SunIcon } from '@heroicons/react/outline';
+import { useProducts, useAuth } from '../hooks/useApi';
 
-import { AuthService } from '../api/api';
-import type { ProdutosPagina } from '../models/produtosPagina.interface';
-
-export default function App() {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filters, setFilters] = useState({ Categoria: '' })
-  const [produtos, setProducts] = useState<ProdutosPagina[]>([])
-  const [paginaAtual, setCurrentPage] = useState(1)
-  const [itensPorPagina] = useState(100)
-  const [totalItems, setTotalItems] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function Home() {
+  const { token } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({ Categoria: '' });
+  const [paginaAtual, setCurrentPage] = useState(1);
+  const [itensPorPagina] = useState(100);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true' || 
            (window.matchMedia('(prefers-color-scheme: dark)').matches && 
-            localStorage.getItem('darkMode') !== 'false')
-  })
+            localStorage.getItem('darkMode') !== 'false');
+  });
 
+  // Hook para buscar produtos
+  const { 
+    data: productsData, 
+    isLoading, 
+    error 
+  } = useProducts(paginaAtual, itensPorPagina, token || '');
 
-  // Aplicar tema escuro no body
+  const products = (productsData as any)?.produtos || [];
+
+  // Aplica tema escuro no body
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('darkMode', 'true')
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
     } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('darkMode', 'false')
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
     }
-  }, [darkMode])
+  }, [darkMode]);
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-  }
+    setDarkMode(!darkMode);
+  };
 
-  const gerarToken = async () => {
-    try {
-      const isAuth = localStorage.getItem("isAuthenticated");
+  // Filtra produtos
+  const filteredParts = products.filter((produto: any) => {
+    const matchesSearch = produto.NomeProduto?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         produto.Codigo?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !filters.Categoria || produto.Categoria === filters.Categoria;
+    return matchesSearch && matchesCategory;
+  });
 
-      if (!isAuth)
-        navigate("/login");
-
-      const response = await AuthService.login()
-
-      const token = response.data.access_token;
-
-      console.log('Token gerado com sucesso:', token);
-
-      localStorage.setItem('token', token);
-
-      return token;
-      
-    } catch (error) {
-      console.error(`Erro ao gerar token: ${error}`);
-      localStorage.setItem("isAuthenticated", "false");
-      setError('Erro ao gerar token. Tente novamente mais tarde.');
-    }
-  }
-
-  const carregarGrid = async (pagina: number, limite: number, token: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const response= await fetch(`https://get-pieces-api-production.up.railway.app/products/?page=${pagina}&itensByPage=${limite}&token=${token}`)
-
-      const produtos = await response.json();
-      console.log(produtos);
-
-      setProducts(produtos.produtos)
-      setTotalItems(produtos.length)
-      
-    } catch (erro) {
-      console.error(`Erro ao executar chamada para exibir produtos da grid -> ${erro}`);
-
-      localStorage.removeItem('token');
-      localStorage.setItem("isAuthenticated", "false");
-
-      gerarToken().then(token => {carregarGrid(pagina, limite, token ?? '')});
-
-      setError('Erro ao carregar produtos. Tente novamente mais tarde.');
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    gerarToken().then(token => carregarGrid(paginaAtual, itensPorPagina, token ?? ''))
-  }, [paginaAtual, itensPorPagina])
-
-  const totalPages = Math.ceil(totalItems / itensPorPagina)
+  // Paginação
+  const totalPages = Math.ceil(filteredParts.length / itensPorPagina);
+  const startIndex = (paginaAtual - 1) * itensPorPagina;
+  const paginatedProducts = filteredParts.slice(startIndex, startIndex + itensPorPagina);
 
   const irParaPagina = (pagina: number) => {
     if (pagina >= 1 && pagina <= totalPages) {
-      setCurrentPage(pagina)
+      setCurrentPage(pagina);
     }
-  }
-
-  const filteredParts = produtos.filter(produto => {
-    const matchesSearch = produto.NomeProduto.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = filters.Categoria ? produto.Categoria == filters.Categoria : true
-    return matchesSearch && matchesCategory
-  })
+  };
 
   const getPageNumbers = () => {
-    const pages = []
-    const maxVisiblePages = 5
+    const pages = [];
+    const maxVisiblePages = 5;
     
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
+        pages.push(i);
       }
     } else {
-      const leftBound = Math.max(1, paginaAtual - 2)
-      const rightBound = Math.min(totalPages, paginaAtual + 2)
+      const leftBound = Math.max(1, paginaAtual - 2);
+      const rightBound = Math.min(totalPages, paginaAtual + 2);
       
-      if (leftBound > 1) pages.push(1)
-      if (leftBound > 2) pages.push('...')
+      if (leftBound > 1) pages.push(1);
+      if (leftBound > 2) pages.push('...');
       
       for (let i = leftBound; i <= rightBound; i++) {
-        pages.push(i)
+        pages.push(i);
       }
       
-      if (rightBound < totalPages - 1) pages.push('...')
-      if (rightBound < totalPages) pages.push(totalPages)
+      if (rightBound < totalPages - 1) pages.push('...');
+      if (rightBound < totalPages) pages.push(totalPages);
     }
     
-    return pages
-  }
+    return pages;
+  };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-100 dark:bg-gray-900 p-4 md:p-8 transition-colors duration-200">
+    <div className="min-h-full p-6">
       <title>🔧Busca de Peças</title>
 
-      <div className="max-w-7xl mx-auto">
-        {/* Cabeçalho com toggle de tema */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2 flex items-center justify-center">
-              <span className="mr-3">🔧</span>
-              <span className="bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">
-                Busca de Peças
-              </span>
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Encontre as peças que você precisa em nosso catálogo completo
-            </p>
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Hero Section */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/30 p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-300 bg-clip-text text-transparent mb-3">
+                🔧 Busca de Peças
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Encontre as peças que você precisa rapidamente
+              </p>
+            </div>
+            
+            <button
+              onClick={toggleDarkMode}
+              className="p-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-xl border border-white/20 dark:border-gray-700/30 text-gray-700 dark:text-yellow-300 hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-200 shadow-lg"
+              aria-label={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            >
+              {darkMode ? (
+                <SunIcon className="h-6 w-6" />
+              ) : (
+                <MoonIcon className="h-6 w-6" />
+              )}
+            </button>
           </div>
-          
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-yellow-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            aria-label={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
-          >
-            {darkMode ? (
-              <SunIcon className="h-6 w-6" />
-            ) : (
-              <MoonIcon className="h-6 w-6" />
-            )}
-          </button>
-        </div>
-        
-        {/* Barra de Busca e Filtros */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 transition-colors duration-200">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Buscar peça
-              </label>
+
+          {/* Search and Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <input
-                  id="search"
                   type="text"
-                  placeholder="Digite o nome da peça..."
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Buscar peças por nome..."
+                  className="block w-full pl-12 pr-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-            
-            <div className="w-full md:w-64">
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Categoria
-              </label>
+
+            <div>
               <select
-                id="category"
-                className="block w-full py-2.5 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="block w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-white"
                 value={filters.Categoria}
                 onChange={(e) => setFilters({ ...filters, Categoria: e.target.value })}
               >
-                <option value="">Todas as Categorias</option>
-                <option value="SEGU_01">Segurança</option>
-                <option value="PILH_01">Pilhas</option>
-                <option value="ROLO_01">Rolos</option>
-                <option value="MOTO_01">Motores</option>
-                <option value="APRS_01">Apresentadores</option>
-                <option value="DSGX_01">Desengraxantes</option>
-                <option value="REDT_01">Redutores</option>
-                <option value="ROLM_01">Rolamentos</option>
+                <option value="">Todas as categorias</option>
+                <option value="SEGU_01">🛡️ Segurança</option>
+                <option value="PILH_01">🔋 Pilhas</option>
+                <option value="ROLO_01">🎡 Rolos</option>
+                <option value="MOTO_01">⚙️ Motores</option>
+                <option value="APRS_01">📊 Apresentadores</option>
+                <option value="DSGX_01">🧽 Desengraxantes</option>
+                <option value="REDT_01">🔧 Redutores</option>
+                <option value="ROLM_01">⚡ Rolamentos</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Mensagem de erro */}
+        {/* Status Messages */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r-xl">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -222,7 +163,7 @@ export default function App() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{error?.message || 'Erro ao carregar produtos'}</p>
               </div>
             </div>
           </div>
@@ -230,138 +171,141 @@ export default function App() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-300">Carregando produtos...</span>
+          <div className="flex justify-center items-center py-12">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">Carregando produtos...</span>
+            </div>
           </div>
         )}
 
-        {/* Lista de Peças */}
-        {!isLoading && (
-          <>
-            {/* Contagem de resultados */}
+        {/* Products Grid */}
+        {!isLoading && !error && (
+          <div className="space-y-6">
+            {/* Results Info */}
             {filteredParts.length > 0 && (
-              <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                {filteredParts.length} {filteredParts.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/30 p-6">
+                <p className="text-gray-600 dark:text-gray-300 text-lg">
+                  <span className="font-bold text-gray-900 dark:text-white">{filteredParts.length}</span> produtos encontrados
+                  {searchTerm && (
+                    <span> para "<span className="font-semibold">{searchTerm}</span>"</span>
+                  )}
+                </p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {filteredParts.length > 0 ? (
-                filteredParts.map(produto => (
-                  <div 
-                    key={produto.Codigo} 
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700"
+            {/* Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {paginatedProducts.length > 0 ? (
+                paginatedProducts.map((produto: any) => (
+                  <Link
+                    key={produto.Codigo}
+                    to={`/produto/${produto.Codigo}`}
+                    className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl border border-white/20 dark:border-gray-700/30 hover:border-blue-200 dark:hover:border-blue-500 transition-all duration-300 overflow-hidden"
                   >
-                    <div className="p-4 flex-1">
-                      <div className="aspect-w-1 aspect-h-1 w-full bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden mb-4">
-                        <img 
-                          src={produto.urlImagem || 'https://placehold.co/300x300/e5e7eb/6b7280?text=Produto'} 
-                          alt={produto.NomeProduto}
-                          className="w-full h-48 object-contain object-center"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = 'https://placehold.co/300x300/e5e7eb/6b7280?text=Produto'
-                          }}
-                        />
+                    <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                      <img 
+                        src={produto.urlImagem || 'https://placehold.co/300x300/e5e7eb/6b7280?text=Produto'} 
+                        alt={produto.NomeProduto}
+                        className="w-full h-full object-contain object-center p-4 group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://placehold.co/300x300/e5e7eb/6b7280?text=Produto';
+                        }}
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="mb-3">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+                          {produto.Categoria || 'Sem categoria'}
+                        </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
                         {produto.NomeProduto}
                       </h3>
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Código: <span className="font-mono">{produto.Codigo}</span>
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                          Ver detalhes
+                        </span>
+                        <svg className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                        {produto.Categoria ?? "Sem Categoria"}
-                      </div>
-                      <div className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-4">
-                        Código: {produto.Codigo}
                       </div>
                     </div>
-                    <div className="px-4 pb-4">
-                      <Link 
-                        to={`/produto/${produto.Codigo}`} 
-                        className="block w-full text-center bg-blue-400 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors color"
-                      >
-                        Ver Detalhes
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
-                <div className="col-span-full text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">Nenhum produto encontrado</h3>
-                  <p className="mt-1 text-gray-500 dark:text-gray-400">Tente ajustar sua busca ou filtros</p>
+                <div className="col-span-full">
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Nenhum produto encontrado</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Tente ajustar os filtros ou termos de busca.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Paginação */}
-            {filteredParts.length > 0 && totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Mostrando <span className="font-medium dark:text-white">{(paginaAtual - 1) * itensPorPagina + 1}</span> a{' '}
-                  <span className="font-medium dark:text-white">{Math.min(paginaAtual * itensPorPagina, totalItems)}</span> de{' '}
-                  <span className="font-medium dark:text-white">{totalItems}</span> itens
-                </div>
-                
-                <nav className="flex items-center gap-1">
-                  <button
-                    onClick={() => irParaPagina(1)}
-                    disabled={paginaAtual === 1}
-                    className={`px-3 py-1.5 rounded-md ${paginaAtual === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`}
-                    aria-label="Primeira página"
-                  >
-                    «
-                  </button>
-                  
-                  <button
-                    onClick={() => irParaPagina(paginaAtual - 1)}
-                    disabled={paginaAtual === 1}
-                    className={`px-3 py-1.5 rounded-md ${paginaAtual === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`}
-                    aria-label="Página anterior"
-                  >
-                    ‹
-                  </button>
-                  
-                  {getPageNumbers().map((page, index) => (
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/30 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    Página <span className="font-semibold">{paginaAtual}</span> de{' '}
+                    <span className="font-semibold">{totalPages}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
                     <button
-                      key={index}
-                      onClick={() => typeof page === 'number' ? irParaPagina(page) : null}
-                      disabled={page === '...'}
-                      className={`px-3.5 py-1.5 rounded-md ${page === paginaAtual ? 'bg-blue-600 text-white' : page === '...' ? 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-default' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`}
-                      aria-current={page === paginaAtual ? 'page' : undefined}
+                      onClick={() => irParaPagina(paginaAtual - 1)}
+                      disabled={paginaAtual === 1}
+                      className="p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
-                      {page}
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
-                  ))}
-                  
-                  <button
-                    onClick={() => irParaPagina(paginaAtual + 1)}
-                    disabled={paginaAtual === totalPages}
-                    className={`px-3 py-1.5 rounded-md ${paginaAtual === totalPages ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`}
-                    aria-label="Próxima página"
-                  >
-                    ›
-                  </button>
-                  
-                  <button
-                    onClick={() => irParaPagina(totalPages)}
-                    disabled={paginaAtual === totalPages}
-                    className={`px-3 py-1.5 rounded-md ${paginaAtual === totalPages ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`}
-                    aria-label="Última página"
-                  >
-                    »
-                  </button>
-                </nav>
+                    
+                    {getPageNumbers().map((page, index) => (
+                      <button
+                        key={index}
+                        onClick={() => typeof page === 'number' ? irParaPagina(page) : undefined}
+                        disabled={typeof page !== 'number'}
+                        className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                          page === paginaAtual
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                            : typeof page === 'number'
+                            ? 'bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'
+                            : 'text-gray-400 cursor-default'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    
+                    <button
+                      onClick={() => irParaPagina(paginaAtual + 1)}
+                      disabled={paginaAtual === totalPages}
+                      className="p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
-  )
+  );
 }
