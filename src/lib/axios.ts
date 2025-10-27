@@ -3,7 +3,7 @@ import axios from 'axios';
 const apiURL = import.meta.env.VITE_API_DE_PRODUTOS_URL;
 
 const api = axios.create({
-  baseURL: 'https://getpiecesaifront-production.up.railway.app',
+  baseURL: 'https://get-pieces-api-production.up.railway.app',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
