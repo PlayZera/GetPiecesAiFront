@@ -35,11 +35,8 @@ export default function SideNavBar() {
       <div className="flex items-center justify-between p-6 border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
         {!isCollapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">GP</span>
-            </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-1xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 GetPieces
               </h1>
               <p className="text-xs text-slate-400">Sistema de Peças</p>
@@ -48,7 +45,7 @@ export default function SideNavBar() {
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2.5 rounded-xl hover:bg-slate-700/50 transition-all duration-200 group border border-slate-600/30 hover:border-slate-500/50"
+          className="pt-10 rounded-xl hover:bg-slate-700/50 transition-all duration-200 group border border-slate-600/30 hover:border-slate-500/50"
         >
           <svg 
             className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}

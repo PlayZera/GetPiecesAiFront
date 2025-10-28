@@ -13,24 +13,33 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_API_DE_PRODUTOS_URL,
+          target: env.VITE_API_BASE_URL || 'http://localhost:8000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
-
-          configure: (proxy, options) => {
+          secure: true, // Para HTTPS
+          configure: (proxy) => {
             proxy.on('proxyRes', (proxyRes) => {
               proxyRes.headers['Access-Control-Allow-Origin'] = '*'
               proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
               proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
             })
           }
-        },
-        allowedHosts: ['https://getpiecesaifront-production.up.railway.app']
+        }
       }
     },
     build: {
       outDir: 'dist',
-      emptyOutDir: true
+      emptyOutDir: true,
+      // Configurações adicionais para produção
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            router: ['react-router-dom'],
+            query: ['@tanstack/react-query']
+          }
+        }
+      }
     },
     preview: {
       port: 4173,
@@ -38,8 +47,11 @@ export default defineConfig(({ mode }) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      },
-      allowedHosts: ['getpiecesaifront-production.up.railway.app']
+      }
+    },
+    // Configurações de ambiente
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(mode)
     }
   }
 })

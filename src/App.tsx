@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from "./components/Layout";
+import ApiDiagnostic from "./components/ApiDiagnostic";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashborad";
@@ -36,6 +37,9 @@ export default function App() {
             </Layout>
           } />
         </Routes>
+        
+        {/* Componente de diagnóstico da API - só em desenvolvimento */}
+        <ApiDiagnostic />
       </BrowserRouter>
     </QueryClientProvider>
   );
