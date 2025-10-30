@@ -28,21 +28,48 @@ export const ApiDiagnostic = () => {
       const responseTime = Date.now() - startTime;
 
       if (response.ok) {
+        // Verificar headers CORS na resposta
+        const corsOrigin = response.headers.get('Access-Control-Allow-Origin');
+        const corsError = !corsOrigin || corsOrigin === 'null' ? 
+          'CORS headers ausentes - configure o backend!' : null;
+
         setApiStatus({
           isHealthy: true,
           responseTime,
-          lastCheck: new Date()
+          lastCheck: new Date(),
+          error: corsError || undefined
         });
+
+        if (corsError) {
+          console.warn('⚠️ CORS Warning:', corsError);
+          console.log('📋 Response Headers:', [...response.headers.entries()]);
+        }
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
       const responseTime = Date.now() - startTime;
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Análise específica do erro
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'CORS BLOQUEADO - Configure o backend conforme BACKEND-CORS-CONFIG.md';
+      } else if (errorMessage.includes('NetworkError') || errorMessage.includes('CORS')) {
+        errorMessage = 'Erro de CORS - Backend precisa permitir origin: ' + window.location.origin;
+      }
+
       setApiStatus({
         isHealthy: false,
         responseTime,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         lastCheck: new Date()
+      });
+
+      console.error('❌ API Health Check Failed:', {
+        error: errorMessage,
+        origin: window.location.origin,
+        target: apiUrl,
+        suggestion: 'Verifique BACKEND-CORS-CONFIG.md para configurar o backend'
       });
     } finally {
       setIsChecking(false);
