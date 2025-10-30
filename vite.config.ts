@@ -47,7 +47,8 @@ export default defineConfig(({ mode }) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
+      },
+      allowedHosts: ['getpiecesaifront-production.up.railway.app']
     },
     // Configurações de ambiente
     define: {
