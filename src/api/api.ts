@@ -22,7 +22,7 @@ export const ProductService = {
     console.log('🔍 Tentando buscar produtos...', { page, limit, token: token.substring(0, 20) + '...' });
     
     const endpoints = [
-      '/products',
+      '/products/',
       '/api/products', 
       '/v1/products',
       '/products/list'
