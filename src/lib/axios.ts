@@ -11,7 +11,7 @@ const getApiBaseUrl = () => {
 };
 
 const api = axios.create({
-  baseURL: getApiBaseUrl(),
+  baseURL: 'https://get-pieces-api-production.up.railway.app',
   timeout: 30000, // Aumentado para 30s devido à latência da Railway
   headers: {
     'Content-Type': 'application/json',
@@ -29,6 +29,15 @@ api.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (config.url && config.url.startsWith('http://')) {
+      config.url = config.url.replace('http://', 'https://');
+    }
+
+    if (config.baseURL && config.baseURL.startsWith('http://')) {
+      config.baseURL = config.baseURL.replace('http://', 'https://');
+    }
+
 
     return config;
   },
@@ -60,12 +69,12 @@ api.interceptors.response.use(
       // Redireciona para login
       window.location.href = '/login';
     }
-    
+
     // Tratamento específico para erros de CORS
     if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
       console.error('CORS Error detected. Please check API CORS configuration.');
     }
-    
+
     return Promise.reject(error);
   }
 );
