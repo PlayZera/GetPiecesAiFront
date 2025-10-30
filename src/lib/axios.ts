@@ -11,11 +11,14 @@ const getApiBaseUrl = () => {
 };
 
 const api = axios.create({
-  baseURL: 'https://get-pieces-api-production.up.railway.app',
+  baseURL: getApiBaseUrl(),
   timeout: 30000, // Aumentado para 30s devido à latência da Railway
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   },
   // Configurações adicionais para CORS
   withCredentials: false,
