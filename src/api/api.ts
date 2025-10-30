@@ -8,7 +8,7 @@ export const ProductService = {
   getProduct: (id: string, token?: string) => { 
     // Tentar primeiro com token no header
     if (token) {
-      return api.get(`/products/${id}`, {
+      return api.get(`/products/${id}?token=${token}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
